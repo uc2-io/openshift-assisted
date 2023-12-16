@@ -1,0 +1,70 @@
+- name: Create Build Root
+  ansible.builtin.file:
+    mode: '0700'
+    path: "{{ ipxe_build_root }}"
+    state: directory
+
+- name: Install Required Packages
+  ansible.builtin.dnf:
+    name: "{{ ipxe_build_packages }}"
+    state: present
+  become: true
+
+- name: Update httpd Configuration
+  ansible.builtin.template:
+    dest: /etc/httpd/conf/httpd.conf
+    mode: "0644"
+    src: templates/httpd.conf.j2
+  become: true
+
+- name: Start Services
+  ansible.builtin.systemd_service:
+    enabled: true
+    name: "{{ item }}"
+    state: restarted
+  become: true
+  loop:
+    - httpd.service
+    - tftp.service
+
+- name: Enable Ports in Firewall
+  ansible.posix.firewalld:
+    immediate: true
+    permanent: true
+    port: "{{ item }}"
+    state: enabled
+  become: true
+  loop:
+    - "69/udp"
+    - "{{ httpd_port }}/tcp"
+
+- name: Pull iPXE Source Code
+  # noqa latest[git]
+  ansible.builtin.git:
+    dest: "{{ ipxe_build_root }}"
+    repo: "{{ ipxe_build_git_url }}"
+
+- name: Create Embedded iPXE Script for Chainload
+  ansible.builtin.template:
+    dest: "{{ ipxe_build_root }}/src/embed.ipxe"
+    mode: "0644"
+    src: templates/ipxe-chain.j2
+
+- name: Build Custom iPXE Binary
+  community.general.make:
+    chdir: "{{ ipxe_build_root }}/src"
+    params:
+      EMBED: embed.ipxe
+    target: "{{ ipxe_build_make_target }}"
+
+- name: Determine Binary Name from Target
+  ansible.builtin.set_fact:
+    _ipxe_build_binary_name: "{{ (ipxe_build_make_target | ansible.builtin.split('/'))[1] }}"
+
+- name: Copy iPXE Binary to TFTP Root
+  ansible.builtin.copy:
+    dest: "{{ ipxe_build_tftp_root }}/{{ _ipxe_build_binary_name }}"
+    mode: "0644"
+    remote_src: true
+    src: "{{ ipxe_build_root }}/src/{{ ipxe_build_make_target }}"
+  become: true

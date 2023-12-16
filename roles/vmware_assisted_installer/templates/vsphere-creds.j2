@@ -1,0 +1,11 @@
+apiVersion: v1
+data:
+  {{ vcenter_hostname }}.password: "{{ vcenter_password | ansible.builtin.b64encode }}"
+  {{ vcenter_hostname }}.username: "{{ vcenter_username | ansible.builtin.b64encode }}"
+kind: Secret
+metadata:
+  annotations:
+    cloudcredential.openshift.io/mode: passthrough
+  name: vsphere-creds
+  namespace: kube-system
+type: Opaque

@@ -1,0 +1,15 @@
+#!ipxe
+dhcp
+{{
+    ipxe_script_results.content | 
+        ansible.builtin.regex_replace('^#!ipxe\\n?', '') |
+        ansible.builtin.regex_replace(
+            'initrd --name initrd (.*)$',
+            'initrd --name initrd ' + ipxe_initrd_path,
+            multiline=true
+        ) |
+        ansible.builtin.regex_replace(
+            'kernel (.*) initrd', 'kernel ' + ipxe_kernel_path + ' initrd',
+            multiline=true
+        )
+}}

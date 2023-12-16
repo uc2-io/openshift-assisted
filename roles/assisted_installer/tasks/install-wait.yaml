@@ -1,0 +1,45 @@
+- name: Wait for Cluster to Finish Installation
+  block:
+    - name: Generate Access Token
+      ansible.builtin.uri:
+        body:
+          client_id: rhsm-api
+          grant_type: refresh_token
+          refresh_token: "{{ offline_token }}"
+        body_format: form-urlencoded
+        method: POST
+        url: "{{ redhat_sso_url }}"
+      register: access_token
+
+    - name: Query Cluster Status
+      ansible.builtin.uri:
+        headers:
+          Authorization: "Bearer {{ access_token.json.access_token }}"
+        method: GET
+        status_code: 200
+        url: "{{ api_clusters_url + cluster_id }}"
+      delay: 30
+      register: query_results
+      retries: 60
+      until: |
+        (
+          query_results.json is defined and query_results.json.status is defined and query_results.json.status == "installed"
+        ) or (
+          query_results.status is defined and query_results.status | int == 401
+        )
+  rescue:
+    - name: Query Cluster Status Again for Error Code
+      ansible.builtin.uri:
+        headers:
+          Authorization: "Bearer {{ access_token.json.access_token }}"
+        method: GET
+        url: "{{ api_clusters_url + cluster_id }}"
+      failed_when: false
+      register: query_results
+
+    - name: Continue Waiting if Token Expired
+      ansible.builtin.include_tasks:
+        file: install-wait.yaml
+      when:
+        - query_results.status is defined
+        - query_results.status | int == 401

@@ -1,0 +1,52 @@
+- name: Wait for Hosts to Register
+  block:
+    - name: Query Clusters
+      ansible.builtin.uri:
+        headers:
+          Authorization: "Bearer {{ access_token.json.access_token }}"
+        method: GET
+        status_code: 200
+        url: "{{ api_clusters_url }}"
+      register: api_query_results
+
+    - name: Set Expected Host Count
+      ansible.builtin.set_fact:
+        _inventory_host_count: "{{ groups[provision_group] | count }}"
+
+    - name: Query Hosts Status
+      ansible.builtin.uri:
+        headers:
+          Authorization: "Bearer {{ access_token.json.access_token }}"
+        method: GET
+        status_code: 200
+        url: "{{ api_infra_envs_url + infra_env_id }}/hosts"
+      delay: 10
+      register: api_query_hosts_results
+      retries: 180
+      until: |
+        (
+          (api_query_hosts_results.json is defined) and
+          (api_query_hosts_results.json | count == _inventory_host_count | int) and
+          (api_query_hosts_results.json | json_query(_query_simple_status) | count == _inventory_host_count | int)
+        ) or (
+          api_query_hosts_results.status is defined and api_query_hosts_results.status | int == 401
+        )
+      vars:
+        _query_simple_status: "[?status=='pending-for-input' || status=='known' || status=='installed']"
+  rescue:
+    - name: Query Hosts Status Again for Error Code
+      ansible.builtin.uri:
+        headers:
+          Authorization: "Bearer {{ access_token.json.access_token }}"
+        method: GET
+        status_code: 200
+        url: "{{ api_infra_envs_url + infra_env_id }}/hosts"
+      failed_when: false
+      register: api_query_hosts_results
+
+    - name: Continue Waiting if Token Expired
+      ansible.builtin.include_tasks:
+        file: host-wait.yaml
+      when:
+        - api_query_hosts_results.status is defined
+        - api_query_hosts_results.status | int == 401

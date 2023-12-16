@@ -1,0 +1,32 @@
+{
+  "api_vip": "{{ assisted_installer.vips.api }}",
+  "api_vips": [
+    {
+      "ip": "{{ assisted_installer.vips.api }}",
+      "cluster_id": "{{ cluster_id }}"
+    }
+  ],
+  "cluster_networks": [
+    {
+      "cidr": "10.128.0.0/14",
+      "host_prefix": 23
+    }
+  ],
+  "ingress_vip": "{{ assisted_installer.vips.ingress }}",
+  "ingress_vips": [
+    {
+      "ip": "{{ assisted_installer.vips.ingress }}",
+      "cluster_id": "{{ cluster_id }}"
+    }
+  ],
+  "machine_networks": [],
+  "network_type": "{{ assisted_installer.network_type }}",
+  "service_networks": [
+    {
+      "cidr": "172.30.0.0/16"
+    }
+  ],
+  "ssh_public_key": "{{ assisted_installer.ssh_authorized_key }}",
+  "user_managed_networking": false,
+  "vip_dhcp_allocation": false
+}

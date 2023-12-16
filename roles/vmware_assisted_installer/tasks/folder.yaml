@@ -1,0 +1,23 @@
+- name: Create Folder {{ item }}
+  community.vmware.vcenter_folder:
+    datacenter_name: "{{ vcenter.datacenter }}"
+    folder_name: "{{ item }}"
+    folder_type: vm
+    hostname: "{{ vcenter.hostname }}"
+    parent_folder: "{{ vcenter_folder_current_base }}"
+    password: "{{ vcenter_password }}"
+    state: present
+    username: "{{ vcenter_username }}"
+    validate_certs: "{{ validate_certs }}"
+
+- name: Update Base Path
+  ansible.builtin.set_fact:
+    vcenter_folder_current_base: "{{ vcenter_folder_current_base + '/' + item }}"
+  when:
+    vcenter_folder_current_base != ""
+
+- name: Initial Base Path Update
+  ansible.builtin.set_fact:
+    vcenter_folder_current_base: "{{ item }}"
+  when:
+    vcenter_folder_current_base == ""

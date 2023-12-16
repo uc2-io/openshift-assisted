@@ -1,0 +1,106 @@
+- name: Generate Access Token
+  ansible.builtin.uri:
+    body:
+      client_id: rhsm-api
+      grant_type: refresh_token
+      refresh_token: "{{ offline_token }}"
+    body_format: form-urlencoded
+    method: POST
+    url: "{{ redhat_sso_url }}"
+  register: access_token
+
+- name: Query API
+  ansible.builtin.uri:
+    headers:
+      Authorization: "Bearer {{ access_token.json.access_token }}"
+    method: GET
+    status_code: 200
+    url: "{{ api_infra_envs_url + infra_env_id }}/downloads/files-presigned?file_name=ipxe-script"
+  register: api_query_ipxe_results
+
+- name: Download iPXE Script
+  ansible.builtin.uri:
+    method: GET
+    return_content: true
+    status_code: 200
+    url: "{{ api_query_ipxe_results.json.url }}"
+  register: ipxe_script_results
+
+- name: Debug ipxe_script_results
+  ansible.builtin.debug:
+    var: ipxe_script_results
+
+- name: Set Kernel and initrd URLs
+  ansible.builtin.set_fact:
+    rhcos_initrd_url: "{{ ipxe_script_results.content | regex_search('initrd --name initrd (.*)$', '\\1', multiline=true) | first }}"
+    rhcos_kernel_url: "{{ ipxe_script_results.content | regex_search('kernel (.*) initrd', '\\1', multiline=true) | first }}"
+
+- name: Debug rhcos_initrd_url
+  ansible.builtin.debug:
+    var: rhcos_initrd_url
+
+- name: Debug rhcos_kernel_url
+  ansible.builtin.debug:
+    var: rhcos_kernel_url
+
+- name: Download Kernel to Web Root
+  ansible.builtin.get_url:
+    dest: "{{ ipxe_web_root }}/kernel"
+    mode: "0644"
+    url: "{{ rhcos_kernel_url }}"
+  become: true
+  delegate_to: bastion
+
+- name: Download initrd to Web Root
+  ansible.builtin.get_url:
+    dest: "{{ ipxe_web_root }}/initrd"
+    mode: "0644"
+    url: "{{ rhcos_initrd_url }}"
+  become: true
+  delegate_to: bastion
+
+- name: Copy iPXE Script
+  ansible.builtin.template:
+    dest: "{{ ipxe_web_root }}/{{ ipxe_script_name }}"
+    mode: "0644"
+    src: "templates/ipxe-script.j2"
+  become: true
+  delegate_to: bastion
+
+# - name: Stop
+#   ansible.builtin.fail:
+#     msg: stopping
+
+- name: IPMI Set Network Boot
+  community.general.ipmi_boot:
+    bootdev: network
+    name: "{{ hostvars[item].ipmi_host }}"
+    password: "{{ ipmi_password }}"
+    persistent: false
+    uefiboot: true
+    user: "{{ ipmi_username }}"
+  loop: "{{ groups[provision_group] }}"
+  register: ipmi_boot_results
+  when:
+    - hostvars[item].metal_node is defined
+    - hostvars[item].metal_node
+
+- name: Debug ipmi_boot_results
+  ansible.builtin.debug:
+    var: ipmi_boot_results
+
+- name: IPMI Boot System
+  community.general.ipmi_power:
+    name: "{{ hostvars[item].ipmi_host }}"
+    password: "{{ ipmi_password }}"
+    state: boot
+    user: "{{ ipmi_username }}"
+  loop: "{{ groups[provision_group] }}"
+  register: ipmi_power_results
+  when:
+    - hostvars[item].metal_node is defined
+    - hostvars[item].metal_node
+
+- name: Debug ipmi_power_results
+  ansible.builtin.debug:
+    var: ipmi_power_results

@@ -1,0 +1,37 @@
+- name: Lookup Cluster ID
+  ansible.builtin.set_fact:
+    cluster_id: "{{ lookup('ansible.builtin.file', assisted_installer.artifact_directory + '/cluster-id') }}"
+
+# failed_when: false to support cleanup from provisioning failure
+- name: Delete "cluster" Resource
+  ansible.builtin.uri:
+    headers:
+      Authorization: "Bearer {{ access_token.json.access_token }}"
+    method: DELETE
+    status_code: 204
+    url: "{{ api_clusters_url }}/{{ cluster_id }}"
+  failed_when: false
+
+- name: Query Cluster Subscription Information
+  ansible.builtin.uri:
+    headers:
+      Authorization: "Bearer {{ access_token.json.access_token }}"
+    method: GET
+    status_code: 200
+    url: "{{ api_subscriptions_url }}?search=(cluster_id='{{ cluster_id }}')"
+  register: api_subscription_results
+
+# failed_when: false to support cleanup from provisioning failure
+- name: Archive Cluster
+  ansible.builtin.uri:
+    body:
+      status: Archived
+    body_format: json
+    headers:
+      Authorization: "Bearer {{ access_token.json.access_token }}"
+    method: PATCH
+    status_code: 200
+    url: "{{ api_subscriptions_url + (api_subscription_results.json | json_query('items[].id') | first) }}"
+  failed_when: false
+  when:
+    - api_subscription_results.json.total | int == 1

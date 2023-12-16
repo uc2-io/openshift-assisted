@@ -1,0 +1,15 @@
+ipxe_build_chain_url: http://bastion.warden.lab.uc2.io:8080/assisted-installer.ipxe
+ipxe_build_git_url: https://github.com/ipxe/ipxe.git
+ipxe_build_make_target: bin-x86_64-efi/ipxe.efi
+ipxe_build_packages:
+  - binutils
+  - gcc
+  - git
+  - httpd
+  - make
+  - mtools
+  - perl
+  - tftp-server
+  - xz-devel
+ipxe_build_root: /tmp/ipxe
+ipxe_build_tftp_root: /var/lib/tftpboot

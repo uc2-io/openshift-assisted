@@ -1,0 +1,2 @@
+validate_certs: true
+vcenter_folder_current_base: ""

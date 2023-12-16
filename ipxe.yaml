@@ -1,0 +1,7 @@
+- name: Build Custom iPXE Environment
+  gather_facts: false
+  hosts: bastion
+  tasks:
+    - name: Import Role
+      ansible.builtin.include_role:
+        name: ipxe_build
