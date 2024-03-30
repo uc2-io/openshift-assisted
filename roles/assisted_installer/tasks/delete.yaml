@@ -1,3 +1,14 @@
+- name: Generate Access Token
+  ansible.builtin.uri:
+    body:
+      client_id: rhsm-api
+      grant_type: refresh_token
+      refresh_token: "{{ offline_token }}"
+    body_format: form-urlencoded
+    method: POST
+    url: "{{ redhat_sso_url }}"
+  register: access_token
+
 - name: Lookup Cluster ID
   ansible.builtin.set_fact:
     cluster_id: "{{ lookup('ansible.builtin.file', assisted_installer.artifact_directory + '/cluster-id') }}"

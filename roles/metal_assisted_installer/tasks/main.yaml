@@ -1,5 +1,0 @@
-- name: Import Custom iPXE Tasks
-  ansible.builtin.import_tasks:
-    file: custom-ipxe.yaml
-  when:
-    - _metal_assisted_installer_action == "custom-ipxe"

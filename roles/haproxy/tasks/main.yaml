@@ -1,0 +1,45 @@
+- name: Install Packages
+  ansible.builtin.yum:
+    name:
+      - haproxy
+      - python3-libsemanage
+      - python3-libselinux
+    state: present
+  tags:
+    - install-packages
+
+- name: Copy haproxy.cfg Template
+  ansible.builtin.template:
+    dest: /etc/haproxy/haproxy.cfg
+    group: root
+    mode: "0644"
+    owner: root
+    setype: etc_t
+    src: templates/haproxy.cfg.j2
+
+- name: Enable haproxy_connect_any
+  ansible.posix.seboolean:
+    name: haproxy_connect_any
+    persistent: true
+    state: true
+
+- name: Enable/Start haproxy Service
+  ansible.builtin.systemd:
+    enabled: true
+    name: haproxy
+    state: restarted
+
+- name: Enable proxied ports in firewall
+  ansible.posix.firewalld:
+    immediate: true
+    permanent: true
+    port: "{{ item }}/tcp"
+    state: enabled
+  loop:
+    - 80
+    - 443
+    - 6443
+    - 9000
+    - 22623
+  tags:
+    - firewalld

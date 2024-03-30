@@ -1,7 +1,7 @@
 apiVersion: v1
 data:
-  {{ vcenter_hostname }}.password: "{{ vcenter_password | ansible.builtin.b64encode }}"
-  {{ vcenter_hostname }}.username: "{{ vcenter_username | ansible.builtin.b64encode }}"
+  {{ vcenter.hostname }}.password: "{{ vcenter_password | ansible.builtin.b64encode }}"
+  {{ vcenter.hostname }}.username: "{{ vcenter_username | ansible.builtin.b64encode }}"
 kind: Secret
 metadata:
   annotations:

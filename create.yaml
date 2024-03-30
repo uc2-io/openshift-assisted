@@ -1,3 +1,13 @@
+- name: Configure Bastion
+  become: true
+  gather_facts: false
+  hosts: bastion
+  roles:
+    - role: haproxy
+      when:
+        - assisted_installer.user_managed_networking is defined
+        - assisted_installer.user_managed_networking
+
 - name: Initialize VMware and Deploy Cluster
   gather_facts: false
   hosts: localhost
@@ -6,79 +16,84 @@
       kubeconfig: "{{ assisted_installer.artifact_directory }}/auth/kubeconfig"
     kubernetes.core.k8s_info:
       kubeconfig: "{{ assisted_installer.artifact_directory }}/auth/kubeconfig"
-  vars_files:
-    vault.yaml
   tasks:
+    - name: Configure DNS
+      ansible.builtin.include_role:
+        name: ipa
+
     - name: Create VMs
-      vars:
-        _vmware_assisted_installer_action: create
       ansible.builtin.include_role:
         name: vmware_assisted_installer
+        tasks_from: create
 
     - name: Create Cluster via Assisted API
-      vars:
-        _assisted_installer_action: create
       ansible.builtin.include_role:
         name: assisted_installer
+        tasks_from: create
 
     - name: Reconfigure and Boot Metal Nodes
-      vars:
-        _metal_assisted_installer_action: custom-ipxe
       ansible.builtin.include_role:
         name: metal_assisted_installer
+        tasks_from: custom-ipxe
+      when:
+        - hostvars | json_query('*.metal_node') | count > 0
 
     - name: Reconfigure and Boot VMs
-      vars:
-        _vmware_assisted_installer_action: boot
       ansible.builtin.include_role:
         name: vmware_assisted_installer
+        tasks_from: boot
 
     - name: Wait for Hosts
-      vars:
-        _assisted_installer_action: host-wait
       ansible.builtin.include_role:
         name: assisted_installer
+        tasks_from: host-wait
 
     - name: Assign Host Roles
-      vars:
-        _assisted_installer_action: host-role
       ansible.builtin.include_role:
         name: assisted_installer
+        tasks_from: host-role
 
     - name: Setup Storage
-      vars:
-        _assisted_installer_action: storage
       ansible.builtin.include_role:
         name: assisted_installer
+        tasks_from: storage
 
     - name: Setup Networking
-      vars:
-        _assisted_installer_action: network
       ansible.builtin.include_role:
         name: assisted_installer
+        tasks_from: network
 
     - name: Start Installation
-      vars:
-        _assisted_installer_action: install
       ansible.builtin.include_role:
         name: assisted_installer
+        tasks_from: install
 
     - name: Wait for Install
-      vars:
-        _assisted_installer_action: install-wait
       ansible.builtin.include_role:
         name: assisted_installer
+        tasks_from: install-wait
 
     - name: Save Credentials
-      vars:
-        _assisted_installer_action: credentials
       ansible.builtin.include_role:
         name: assisted_installer
+        tasks_from: credentials
 
     - name: Setup Provider Credentials
-      vars:
-        _vmware_assisted_installer_action: provider-credentials
       ansible.builtin.include_role:
         name: vmware_assisted_installer
+        tasks_from: provider-credentials
       when:
         - assisted_installer.platform_type == "vsphere"
+
+    - name: Apply Cluster Baseline Configuration
+      when:
+        - apply_gitops_baseline is defined
+        - apply_gitops_baseline
+      block:
+        - name: Deploy Sealed Secrets Controller
+          ansible.builtin.include_role:
+            name: sealed_secrets
+
+        - name: Deploy Argo CD and initial Baseline App of Apps
+          ansible.builtin.include_role:
+            name: bootstrap

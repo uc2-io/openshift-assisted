@@ -1,8 +1,6 @@
 - name: Initialize VMware and Deploy Cluster Nodes
   gather_facts: false
   hosts: localhost
-  vars_files:
-    vault.yaml
   tasks:
     - name: Clean up ~/.ssh/known_hosts
       when:
@@ -39,10 +37,11 @@
         state: absent
 
     - name: Delete Cluster from Red Hat Cloud Console
-      vars:
-        _assisted_installer_action: delete
+      # vars:
+      #   _assisted_installer_action: delete
       ansible.builtin.import_role:
         name: assisted_installer
+        tasks_from: delete
 
     - name: Delete VMs
       community.vmware.vmware_guest:

@@ -1,0 +1,52 @@
+- name: Delete A Records
+  community.general.ipa_dnsrecord:
+    ipa_host: "{{ ipa_hostname }}"
+    ipa_pass: "{{ ipa_password }}"
+    ipa_user: "{{ ipa_username }}"
+    name: "{{ item }}"
+    record_type: A
+    record_value: "{{ hostvars[item].ip }}"
+    state: absent
+    validate_certs: "{{ validate_certs }}"
+    zone_name: "{{ base_domain }}"
+  loop: "{{ groups[provision_group] }}"
+
+- name: Delete PTR Records
+  community.general.ipa_dnsrecord:
+    ipa_host: "{{ ipa_hostname }}"
+    ipa_pass: "{{ ipa_password }}"
+    ipa_user: "{{ ipa_username }}"
+    name: "{{ hostvars[item].ip.split('.')[-1] }}"
+    record_type: PTR
+    record_value: "{{ item }}.{{ base_domain }}."
+    state: absent
+    validate_certs: "{{ validate_certs }}"
+    zone_name: "{{ hostvars[item].ip.split('.')[-2] }}.{{ hostvars[item].ip.split('.')[-3] }}.{{ hostvars[item].ip.split('.')[-4] }}.in-addr.arpa."
+  loop: "{{ groups[provision_group] }}"
+
+- name: Delete api/api-int Records
+  community.general.ipa_dnsrecord:
+    ipa_host: "{{ ipa_hostname }}"
+    ipa_pass: "{{ ipa_password }}"
+    ipa_user: "{{ ipa_username }}"
+    name: "{{ item }}"
+    record_type: A
+    record_value: "{{ hostvars[groups['helper'][0]].ip }}"
+    state: absent
+    validate_certs: "{{ validate_certs }}"
+    zone_name: "{{ base_domain }}"
+  with_items:
+    - api
+    - api-int
+
+- name: Delete Wildcard for Applications
+  community.general.ipa_dnsrecord:
+    ipa_host: "{{ ipa_hostname }}"
+    ipa_pass: "{{ ipa_password }}"
+    ipa_user: "{{ ipa_username }}"
+    name: "*.apps"
+    record_type: A
+    record_value: "{{ hostvars[groups['helper'][0]].ip }}"
+    state: absent
+    validate_certs: "{{ validate_certs }}"
+    zone_name: "{{ base_domain }}"

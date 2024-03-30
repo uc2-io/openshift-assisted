@@ -1,0 +1,59 @@
+- name: Generate IPA Session Cookie
+  ansible.builtin.uri:
+    body: "user={{ ipa_username }}&password={{ ipa_password }}"
+    headers:
+      Accept: "text/plain"
+      Content-Type: "application/x-www-form-urlencoded"
+      Referer: "https://{{ ipa_hostname }}/ipa"
+    method: POST
+    status_code: 200
+    url: "https://{{ ipa_hostname }}/ipa/session/login_password"
+    validate_certs: "{{ validate_certs }}"
+  register: ipa_session
+
+- name: Create A/PTR Records
+  ansible.builtin.uri:
+    body:
+      method: dnsrecord_add
+      params:
+        - - "{{ assisted_installer.base_domain }}."
+          - "{{ item }}"
+        - a_extra_create_reverse: true
+          a_part_ip_address: "{{ hostvars[item].ip }}"
+    body_format: json
+    headers:
+      Accept: "application/json"
+      Cookie: "{{ ipa_session.set_cookie }}"
+      Referer: "https://{{ ipa_hostname }}/ipa"
+    method: POST
+    status_code: 200
+    url: "https://{{ ipa_hostname }}/ipa/session/json"
+    validate_certs: "{{ validate_certs }}"
+  loop: "{{ groups[provision_group] }}"
+
+- name: Create api/api-int Records
+  community.general.ipa_dnsrecord:
+    ipa_host: "{{ ipa_hostname }}"
+    ipa_pass: "{{ ipa_password }}"
+    ipa_user: "{{ ipa_username }}"
+    name: "{{ item }}"
+    record_type: A
+    record_value: "{{ hostvars[groups['bastion'][0]].ip }}"
+    state: present
+    validate_certs: "{{ validate_certs }}"
+    zone_name: "{{ assisted_installer.base_domain }}"
+  loop:
+    - api
+    - api-int
+
+- name: Create Wildcard for Applications
+  community.general.ipa_dnsrecord:
+    ipa_host: "{{ ipa_hostname }}"
+    ipa_pass: "{{ ipa_password }}"
+    ipa_user: "{{ ipa_username }}"
+    name: "*.apps"
+    record_type: A
+    record_value: "{{ hostvars[groups['bastion'][0]].ip }}"
+    state: present
+    validate_certs: "{{ validate_certs }}"
+    zone_name: "{{ assisted_installer.base_domain }}"
