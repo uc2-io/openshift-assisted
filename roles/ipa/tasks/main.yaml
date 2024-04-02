@@ -31,7 +31,7 @@
     validate_certs: "{{ validate_certs }}"
   loop: "{{ groups[provision_group] }}"
 
-- name: Create api/api-int Records
+- name: Create api/api-int Records (User Managed Networking)
   community.general.ipa_dnsrecord:
     ipa_host: "{{ ipa_hostname }}"
     ipa_pass: "{{ ipa_password }}"
@@ -45,8 +45,31 @@
   loop:
     - api
     - api-int
+  when:
+    - assisted_installer is defined
+    - assisted_installer.user_managed_networking is defined
+    - assisted_installer.user_managed_networking
 
-- name: Create Wildcard for Applications
+- name: Create api/api-int Records (Cluster Managed Networking [keepalived])
+  community.general.ipa_dnsrecord:
+    ipa_host: "{{ ipa_hostname }}"
+    ipa_pass: "{{ ipa_password }}"
+    ipa_user: "{{ ipa_username }}"
+    name: "{{ item }}"
+    record_type: A
+    record_value: "{{ assisted_installer.vips.api }}"
+    state: present
+    validate_certs: "{{ validate_certs }}"
+    zone_name: "{{ assisted_installer.base_domain }}"
+  loop:
+    - api
+    - api-int
+  when:
+    - assisted_installer is defined
+    - assisted_installer.user_managed_networking is defined
+    - not assisted_installer.user_managed_networking
+
+- name: Create Wildcard for Applications (User Managed Networking)
   community.general.ipa_dnsrecord:
     ipa_host: "{{ ipa_hostname }}"
     ipa_pass: "{{ ipa_password }}"
@@ -57,3 +80,23 @@
     state: present
     validate_certs: "{{ validate_certs }}"
     zone_name: "{{ assisted_installer.base_domain }}"
+  when:
+    - assisted_installer is defined
+    - assisted_installer.user_managed_networking is defined
+    - assisted_installer.user_managed_networking
+
+- name: Create Wildcard for Applications (Cluster Managed Networking [keepalived])
+  community.general.ipa_dnsrecord:
+    ipa_host: "{{ ipa_hostname }}"
+    ipa_pass: "{{ ipa_password }}"
+    ipa_user: "{{ ipa_username }}"
+    name: "*.apps"
+    record_type: A
+    record_value: "{{ assisted_installer.vips.ingress }}"
+    state: present
+    validate_certs: "{{ validate_certs }}"
+    zone_name: "{{ assisted_installer.base_domain }}"
+  when:
+    - assisted_installer is defined
+    - assisted_installer.user_managed_networking is defined
+    - not assisted_installer.user_managed_networking
