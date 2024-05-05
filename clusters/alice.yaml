@@ -103,7 +103,6 @@ all:
       IMzqSL8BzcvacoY7ahxZvMDF19ct8ddrfekyqmYaULPKWg254NA/kRGmqVmexg7p
       6dIaZenqcGcg
       -----END CERTIFICATE-----
-    apply_gitops_baseline: true
     assisted_installer:
       artifact_directory: /home/ckeller/upi/assisted/alice
       base_domain: alice.lab.uc2.io
@@ -127,6 +126,7 @@ all:
       #   api: 172.16.10.130
       #   ingress: 172.16.10.131
     cleanup_known_hosts: true
+    gitops_baseline_apply: true
     ipxe_initrd_path: http://bastion.alice.lab.uc2.io:8080/initrd
     ipxe_kernel_path: http://bastion.alice.lab.uc2.io:8080/kernel
     ipxe_script_host: bastion.alice.lab.uc2.io
@@ -297,7 +297,7 @@ all:
               unit_number: 0
             - controller_number: 0
               datastore: r440-1-nvme-local
-              size_gb: 500
+              size_gb: 1000
               state: present
               type: thin
               unit_number: 1
@@ -322,7 +322,7 @@ all:
               unit_number: 0
             - controller_number: 0
               datastore: r440-2-nvme-local
-              size_gb: 500
+              size_gb: 1000
               state: present
               type: thin
               unit_number: 1
@@ -347,7 +347,7 @@ all:
               unit_number: 0
             - controller_number: 0
               datastore: r440-3-nvme-local
-              size_gb: 500
+              size_gb: 1000
               state: present
               type: thin
               unit_number: 1

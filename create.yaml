@@ -84,8 +84,8 @@
 
     - name: Apply Cluster Baseline Configuration
       when:
-        - apply_gitops_baseline is defined
-        - apply_gitops_baseline
+        - gitops_baseline_apply is defined
+        - gitops_baseline_apply
       block:
         - name: Deploy Sealed Secrets Controller
           ansible.builtin.include_role:
@@ -94,3 +94,5 @@
         - name: Deploy Argo CD and initial Baseline App of Apps
           ansible.builtin.include_role:
             name: bootstrap
+          vars:
+            global_baseline_disable_charts: "{{ gitops_baseline_disable_charts | default([]) }}"
