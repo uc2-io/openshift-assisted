@@ -1,5 +1,4 @@
 #!ipxe
-dhcp
 {{
     ipxe_script_results.content | 
         ansible.builtin.regex_replace('^#!ipxe\\n?', '') |

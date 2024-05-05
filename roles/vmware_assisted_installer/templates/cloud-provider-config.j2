@@ -1,20 +1,21 @@
 apiVersion: v1
 data:
-  config: |
+  config: |+
     [Global]
-    secret-name=vsphere-creds
-    secret-namespace=kube-system
-    insecure-flag=1
-
-    [Workspace]
-    server={{ vcenter.hostname }}
-    datacenter={{ vcenter.datacenter }}
-    default-datastore=/{{ vcenter.datacenter }}/datastore/{{ vcenter.datastore }}
-    folder=/{{ vcenter.datacenter }}/vm/{{ vcenter.folder }}
-    resourcepool-path=/{{ vcenter.datacenter }}/host/{{ vcenter.cluster }}/Resources
+    secret-name = "vsphere-creds"
+    secret-namespace = "kube-system"
+    insecure-flag = "1"
 
     [VirtualCenter "{{ vcenter.hostname }}"]
-    datacenters={{ vcenter.datacenter }}
+    port = "443"
+    datacenters = "{{ vcenter.datacenter }}"
+
+    [Workspace]
+    server = "{{ vcenter.hostname }}"
+    datacenter = "UC2"
+    default-datastore = "/{{ vcenter.datacenter }}/datastore/{{ vcenter.datastore }}"
+    folder = "/{{ vcenter.datacenter }}/vm/{{ vcenter.folder }}"
+
 kind: ConfigMap
 metadata:
   name: cloud-provider-config

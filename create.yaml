@@ -9,13 +9,10 @@
         - assisted_installer.user_managed_networking
 
 - name: Initialize VMware and Deploy Cluster
+  environment:
+    K8S_AUTH_KUBECONFIG: "{{ assisted_installer.artifact_directory }}/auth/kubeconfig"
   gather_facts: false
   hosts: localhost
-  module_defaults:
-    kubernetes.core.k8s:
-      kubeconfig: "{{ assisted_installer.artifact_directory }}/auth/kubeconfig"
-    kubernetes.core.k8s_info:
-      kubeconfig: "{{ assisted_installer.artifact_directory }}/auth/kubeconfig"
   tasks:
     - name: Configure DNS
       ansible.builtin.include_role:
