@@ -99,3 +99,38 @@
     - "{{ disk_name_dict }}"
     - disks
     - skip_missing: false
+
+- name: Combine Applicable Additional NICs & Hostnames into Dictionary for Easy Lookup
+  ansible.builtin.set_fact:
+    additional_nic_name_dict: >-
+      {{
+        additional_nic_name_dict | default([]) +
+        [
+          {
+            'name': item,
+            'nics': hostvars[item].additional_nics | default([])
+          }
+        ]
+      }}
+  loop: "{{ groups[provision_group] }}"
+  when:
+    - not (hostvars[item].metal_node | default(false))
+    - hostvars[item].additional_nics is defined
+    - hostvars[item].additional_nics | count > 0
+
+- name: Add Additional NICs
+  community.vmware.vmware_guest_network:
+    datacenter: "{{ vcenter.datacenter }}"
+    device_type: "{{ item.1.device_type | default('vmxnet3') }}"
+    force: "{{ item.1.force | default(false) }}"
+    hostname: "{{ vcenter.hostname }}"
+    name: "{{ item.0.name }}.{{ assisted_installer.base_domain }}"
+    network_name: "{{ item.1.network_name | default(omit) }}"
+    password: "{{ vcenter_password }}"
+    start_connected: "{{ item.1.start_connected | default(true) }}"
+    username: "{{ vcenter_username }}"
+    vlan_id: "{{ item.1.vlan_id | default(omit) }}"
+  with_subelements:
+    - "{{ additional_nic_name_dict }}"
+    - nics
+    - skip_missing: false

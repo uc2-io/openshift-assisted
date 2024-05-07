@@ -253,6 +253,9 @@ all:
           memory: 24576
           mem_reservation: 24576
         in0:
+          additional_nics:
+            - network_name: VLAN Trunk
+            - network_name: Storage - ODF Private
           api_node_type: worker
           cores: 12
           datastore: r440-1-nvme-local
@@ -278,6 +281,9 @@ all:
           mask: 255.255.255.0
           memory: 32768
         in1:
+          additional_nics:
+            - network_name: VLAN Trunk
+            - network_name: Storage - ODF Private
           api_node_type: worker
           cores: 12
           datastore: r440-2-nvme-local
@@ -303,6 +309,9 @@ all:
           mask: 255.255.255.0
           memory: 32768
         in2:
+          additional_nics:
+            - network_name: VLAN Trunk
+            - network_name: Storage - ODF Private
           api_node_type: worker
           cores: 12
           datastore: r440-3-nvme-local
@@ -328,6 +337,8 @@ all:
           mask: 255.255.255.0
           memory: 32768
         wk0:
+          additional_nics:
+            - network_name: VLAN Trunk
           api_node_type: worker
           cores: 8
           datastore: r440-1-ssd-local
@@ -347,6 +358,8 @@ all:
           mask: 255.255.255.0
           memory: 24576
         wk1:
+          additional_nics:
+            - network_name: VLAN Trunk
           api_node_type: worker
           cores: 8
           datastore: r440-2-ssd-local
@@ -366,6 +379,8 @@ all:
           mask: 255.255.255.0
           memory: 24576
         wk2:
+          additional_nics:
+            - network_name: VLAN Trunk
           api_node_type: worker
           cores: 8
           datastore: r440-3-ssd-local
