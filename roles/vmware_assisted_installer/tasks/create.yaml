@@ -134,3 +134,5 @@
     - "{{ additional_nic_name_dict }}"
     - nics
     - skip_missing: false
+  when:
+    - additional_nic_name_dict is defined
