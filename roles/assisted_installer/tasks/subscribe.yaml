@@ -13,21 +13,6 @@
   ansible.builtin.set_fact:
     cluster_id: "{{ lookup('ansible.builtin.file', assisted_installer.artifact_directory + '/cluster-id') }}"
 
-# failed_when: false to support cleanup from provisioning failure
-- name: Delete "cluster" Resource
-  ansible.builtin.uri:
-    headers:
-      Authorization: "Bearer {{ access_token.json.access_token }}"
-    method: DELETE
-    status_code: 204
-    url: "{{ api_clusters_url }}/{{ cluster_id }}"
-  failed_when: false
-  register: delete_results
-
-- name: Debug delete_results
-  ansible.builtin.debug:
-    var: delete_results
-
 - name: Query Cluster Subscription Information
   ansible.builtin.uri:
     headers:
@@ -41,22 +26,23 @@
   ansible.builtin.debug:
     var: api_subscription_results
 
-# failed_when: false to support cleanup from provisioning failure
-- name: Archive Cluster
+- name: Subscribe Cluster
   ansible.builtin.uri:
     body:
-      status: Archived
+      isValid: true
+      support_level: "Standard"
+      usage: "Development/Test"
+      service_level: "L1-L3"
+      system_units: "Cores/vCPU"
+      cluster_billing_model: "standard"
     body_format: json
     headers:
       Authorization: "Bearer {{ access_token.json.access_token }}"
     method: PATCH
     status_code: 200
-    url: "{{ api_subscriptions_url + (api_subscription_results.json | json_query('items[].id') | first) }}"
-  failed_when: false
-  register: archive_results
-  when:
-    - api_subscription_results.json.total | int == 1
+    url: "{{ api_subscriptions_url + api_subscription_results.json['items'][0].id }}"
+  register: api_subscribe_results
 
-- name: Debug archive_results
+- name: Debug api_subscribe_results
   ansible.builtin.debug:
-    var: archive_results
+    var: api_subscribe_results

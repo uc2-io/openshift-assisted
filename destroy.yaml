@@ -1,4 +1,4 @@
-- name: Initialize VMware and Deploy Cluster Nodes
+- name: Destroy Cluster & Cleanup
   gather_facts: false
   hosts: localhost
   tasks:
@@ -25,24 +25,6 @@
       ansible.builtin.set_fact:
         infra_env_id: "{{ lookup('ansible.builtin.file', assisted_installer.artifact_directory + '/infra-env-id') }}"
 
-    - name: Delete ISO From Download Path
-      ansible.builtin.file:
-        path: >-
-          {{
-            assisted_installer.discovery_iso_download_path + '/' +
-            assisted_installer.cluster_name + '-' +
-            infra_env_id + '-' +
-            assisted_installer.discovery_iso_type + '.iso'
-          }}
-        state: absent
-
-    - name: Delete Cluster from Red Hat Cloud Console
-      # vars:
-      #   _assisted_installer_action: delete
-      ansible.builtin.import_role:
-        name: assisted_installer
-        tasks_from: delete
-
     - name: Delete VMs
       community.vmware.vmware_guest:
         cluster: "{{ vcenter.cluster }}"
@@ -68,3 +50,19 @@
         username: "{{ vcenter_username }}"
         validate_certs: "{{ validate_certs }}"
       failed_when: false
+
+    - name: Delete ISO From Download Path
+      ansible.builtin.file:
+        path: >-
+          {{
+            assisted_installer.discovery_iso_download_path + '/' +
+            assisted_installer.cluster_name + '-' +
+            infra_env_id + '-' +
+            assisted_installer.discovery_iso_type + '.iso'
+          }}
+        state: absent
+
+    - name: Delete Cluster from Red Hat Cloud Console
+      ansible.builtin.import_role:
+        name: assisted_installer
+        tasks_from: delete

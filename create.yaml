@@ -82,6 +82,11 @@
       when:
         - assisted_installer.platform_type == "vsphere"
 
+    - name: Subscribe Cluster
+      ansible.builtin.include_role:
+        name: assisted_installer
+        tasks_from: subscribe
+
     - name: Apply Cluster Baseline Configuration
       when:
         - gitops_baseline_apply is defined
