@@ -104,10 +104,10 @@ all:
       6dIaZenqcGcg
       -----END CERTIFICATE-----
     assisted_installer:
-      artifact_directory: /home/ckeller/upi/assisted/alice
-      base_domain: alice.lab.uc2.io
+      artifact_directory: /home/ckeller/upi/assisted/ender
+      base_domain: ender.lab.uc2.io
       base_dns_domain: lab.uc2.io
-      cluster_name: alice
+      cluster_name: ender
       cpu_architecture: x86_64
       discovery_iso_datastore: pool-nvme-vms
       discovery_iso_download_path: /tmp
@@ -117,19 +117,16 @@ all:
         mode: tpmv2
       high_availability_mode: Full
       network_type: OVNKubernetes
-      openshift_y_release: "4.15"
+      openshift_y_release: "4.16"
       platform_type: vsphere
       ssh_authorized_key: >-
         ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCwU45tZ14b81PybKtTCk4Qr6ZIA6QgO0XknAVqBEV5kAPy9aHB/L99FbIpX6iku5/QRNe7Id68gJW2vl3YRX9xQ2ogV6BFlduGM+4dqeaQ+LeYoaKrVzze/c2GmgepiYGbpOtMA9tfi3QDla2HdW1cA+SXZwl0LjSNcodu5xHNSWUnH2m71+jepwVYx8Q6uWMLab8m1jpPFrXi96aAMsssgxVo72cZNoKCetj5ckfCfh2Th5FeRgCJV9QjOAkSxSjEoa5gtaniVTH6YsmVSS4zAz3hVTlwY3HM2OxMKeHrHbmodGkx9MxC6ET1iDN7ZwfQCIlksY4x0ex/+Jv4qw5GnE0FVbvrzDlqyVDSwuvFWbQVmPobwmzBFEIxyPzeo1JcAHpLHPePadUvJBzlRUCbxZSIvlV3KOKq9EQ/nEhvhWBwEcnBYXvE+lylcH+54Js0qz4cHVVvlINZtEeC++5PFort5jvGHCMHkf4ofMXWtMJ/Zt43POkNG7k/RFRQ/THKkWriFFW7onceIEOWJzg4sCC8/ziQiKMgojkA9emecWuQJyKRKpkcnfR5hrmq3wBV+AWalj+Cs/4HyuHJWdchtCGb6CgcxAM0AknOevpRr/OomXW0JW95/JIxXUB/+X2VH/rO8+YTeeXCAiBOmreOpDvjBCmjfPfOeyxmivZh5w== ckeller@salab.aws
       user_managed_networking: true
-      # vips:
-      #   api: 172.16.10.130
-      #   ingress: 172.16.10.131
     cleanup_known_hosts: true
     gitops_baseline_apply: true
-    ipxe_initrd_path: http://bastion.alice.lab.uc2.io:8080/initrd
-    ipxe_kernel_path: http://bastion.alice.lab.uc2.io:8080/kernel
-    ipxe_script_host: bastion.alice.lab.uc2.io
+    ipxe_initrd_path: http://bastion.ender.lab.uc2.io:8080/initrd
+    ipxe_kernel_path: http://bastion.ender.lab.uc2.io:8080/kernel
+    ipxe_script_host: bastion.ender.lab.uc2.io
     ipxe_script_name: assisted-installer.ipxe
     ipxe_script_port: "8080"
     ipxe_script_transport: http
@@ -141,20 +138,20 @@ all:
     vcenter:
       cluster: r440s
       datacenter: UC2
-      datastore: pool-spinning-z2-1
-      folder: openshift/assisted/alice
+      datastore: pool-nvme-vms
+      folder: openshift/assisted/ender
       # 20 (ESXi 8.0 and greater)
       hardware_version: 20
       hostname: vsphere.lab.uc2.io
-      network: "Lab Network - 10g"
+      network: aggr-25g-800-openshift
     validate_certs: true
   children:
     bastion:
       hosts:
         bastion:
-          ansible_host: 172.16.10.172
+          ansible_host: 172.16.80.11
           httpd_port: 8080
-          ip: 172.16.10.172
+          ip: 172.16.80.11
     pg:
       hosts:
         cp0:
@@ -162,7 +159,7 @@ all:
           cores: 8
           # r440-1 has 2.0 GHz/Core
           # 2.0 GHz * 1000 MHz/GHz * 8 vCPU
-          cpu_reservation: 16000
+          # cpu_reservation: 16000
           datastore: r440-1-nvme-local
           disks:
             - boot: true
@@ -173,19 +170,19 @@ all:
               type: thick
               unit_number: 0
           dns: 172.16.10.2
-          gateway: 172.16.10.254
+          gateway: 172.16.80.254
           interface: ens192
-          ip: 172.16.10.132
+          ip: 172.16.80.60
           logical_nic_name: eth0
           mask: 255.255.255.0
           memory: 24576
-          mem_reservation: 24576
+          # mem_reservation: 24576
         cp1:
           api_node_type: master
           cores: 8
           # r440-2 has 2.0 GHz/Core
           # 2.0 GHz * 1000 MHz/GHz * 8 vCPU
-          cpu_reservation: 16000
+          # cpu_reservation: 16000
           datastore: r440-2-nvme-local
           disks:
             - boot: true
@@ -196,19 +193,19 @@ all:
               type: thick
               unit_number: 0
           dns: 172.16.10.2
-          gateway: 172.16.10.254
+          gateway: 172.16.80.254
           interface: ens192
-          ip: 172.16.10.133
+          ip: 172.16.80.61
           logical_nic_name: eth0
           mask: 255.255.255.0
           memory: 24576
-          mem_reservation: 24576
+          # mem_reservation: 24576
         cp2:
           api_node_type: master
           cores: 8
           # r440-3 has 2.0 GHz/Core
           # 2.0 GHz * 1000 MHz/GHz * 8 vCPU
-          cpu_reservation: 16000
+          # cpu_reservation: 16000
           datastore: r440-3-nvme-local
           disks:
             - boot: true
@@ -219,16 +216,16 @@ all:
               type: thick
               unit_number: 0
           dns: 172.16.10.2
-          gateway: 172.16.10.254
+          gateway: 172.16.80.254
           interface: ens192
-          ip: 172.16.10.134
+          ip: 172.16.80.62
           logical_nic_name: eth0
           mask: 255.255.255.0
           memory: 24576
-          mem_reservation: 24576
+          # mem_reservation: 24576
         in0:
           api_node_type: worker
-          cores: 24
+          cores: 8
           datastore: r440-1-nvme-local
           disks:
             - boot: true
@@ -239,15 +236,15 @@ all:
               type: thin
               unit_number: 0
           dns: 172.16.10.2
-          gateway: 172.16.10.254
+          gateway: 172.16.80.254
           interface: ens192
-          ip: 172.16.10.141
+          ip: 172.16.80.63
           logical_nic_name: eth0
           mask: 255.255.255.0
-          memory: 65536
+          memory: 32768
         in1:
           api_node_type: worker
-          cores: 24
+          cores: 8
           datastore: r440-2-nvme-local
           disks:
             - boot: true
@@ -258,15 +255,15 @@ all:
               type: thin
               unit_number: 0
           dns: 172.16.10.2
-          gateway: 172.16.10.254
+          gateway: 172.16.80.254
           interface: ens192
-          ip: 172.16.10.142
+          ip: 172.16.80.64
           logical_nic_name: eth0
           mask: 255.255.255.0
-          memory: 65536
+          memory: 32768
         in2:
           api_node_type: worker
-          cores: 24
+          cores: 8
           datastore: r440-3-nvme-local
           disks:
             - boot: true
@@ -277,84 +274,9 @@ all:
               type: thin
               unit_number: 0
           dns: 172.16.10.2
-          gateway: 172.16.10.254
+          gateway: 172.16.80.254
           interface: ens192
-          ip: 172.16.10.143
-          logical_nic_name: eth0
-          mask: 255.255.255.0
-          memory: 65536
-        odf0:
-          api_node_type: worker
-          cores: 12
-          datastore: r440-1-nvme-local
-          disks:
-            - boot: true
-              controller_number: 0
-              datastore: r440-1-nvme-local
-              size_gb: 100
-              state: present
-              type: thin
-              unit_number: 0
-            - controller_number: 0
-              datastore: r440-1-nvme-local
-              size_gb: 1000
-              state: present
-              type: thin
-              unit_number: 1
-          dns: 172.16.10.2
-          gateway: 172.16.10.254
-          interface: ens192
-          ip: 172.16.10.138
-          logical_nic_name: eth0
-          mask: 255.255.255.0
-          memory: 32768
-        odf1:
-          api_node_type: worker
-          cores: 12
-          datastore: r440-2-nvme-local
-          disks:
-            - boot: true
-              controller_number: 0
-              datastore: r440-2-nvme-local
-              size_gb: 100
-              state: present
-              type: thin
-              unit_number: 0
-            - controller_number: 0
-              datastore: r440-2-nvme-local
-              size_gb: 1000
-              state: present
-              type: thin
-              unit_number: 1
-          dns: 172.16.10.2
-          gateway: 172.16.10.254
-          interface: ens192
-          ip: 172.16.10.139
-          logical_nic_name: eth0
-          mask: 255.255.255.0
-          memory: 32768
-        odf2:
-          api_node_type: worker
-          cores: 12
-          datastore: r440-3-nvme-local
-          disks:
-            - boot: true
-              controller_number: 0
-              datastore: r440-3-nvme-local
-              size_gb: 100
-              state: present
-              type: thin
-              unit_number: 0
-            - controller_number: 0
-              datastore: r440-3-nvme-local
-              size_gb: 1000
-              state: present
-              type: thin
-              unit_number: 1
-          dns: 172.16.10.2
-          gateway: 172.16.10.254
-          interface: ens192
-          ip: 172.16.10.140
+          ip: 172.16.80.65
           logical_nic_name: eth0
           mask: 255.255.255.0
           memory: 32768
