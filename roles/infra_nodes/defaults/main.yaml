@@ -1,0 +1,10 @@
+---
+infra_labels:
+  "node-role.kubernetes.io/infra": ""
+infra_taints:
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/infra
+    value: reserved
+  - effect: NoExecute
+    key: node-role.kubernetes.io/infra
+    value: reserved

@@ -14,6 +14,8 @@
   gather_facts: false
   hosts: localhost
   tasks:
+
+
     - name: Configure DNS
       ansible.builtin.include_role:
         name: ipa
@@ -75,6 +77,10 @@
         name: assisted_installer
         tasks_from: credentials
 
+    - name: Apply Infrastructure Node Configuration
+      ansible.builtin.include_role:
+        name: infra_nodes
+
     - name: Setup Provider Credentials
       ansible.builtin.include_role:
         name: vmware_assisted_installer
@@ -101,3 +107,4 @@
             name: bootstrap
           vars:
             global_baseline_disable_charts: "{{ gitops_baseline_disable_charts | default([]) }}"
+            global_use_infra_nodes: "{{ gitops_use_infra_nodes | default(false) }}"

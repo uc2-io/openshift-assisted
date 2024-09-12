@@ -127,6 +127,9 @@ all:
       #   ingress: 172.16.10.131
     cleanup_known_hosts: true
     gitops_baseline_apply: true
+    gitops_baseline_disable_charts:
+      - monitoring
+    gitops_use_infra_nodes: true
     ipxe_initrd_path: http://bastion.alice.lab.uc2.io:8080/initrd
     ipxe_kernel_path: http://bastion.alice.lab.uc2.io:8080/kernel
     ipxe_script_host: bastion.alice.lab.uc2.io
@@ -245,6 +248,8 @@ all:
           logical_nic_name: eth0
           mask: 255.255.255.0
           memory: 65536
+          node:
+            infra: true
         in1:
           api_node_type: worker
           cores: 24
@@ -264,6 +269,8 @@ all:
           logical_nic_name: eth0
           mask: 255.255.255.0
           memory: 65536
+          node:
+            infra: true
         in2:
           api_node_type: worker
           cores: 24
@@ -283,6 +290,8 @@ all:
           logical_nic_name: eth0
           mask: 255.255.255.0
           memory: 65536
+          node:
+            infra: true
         odf0:
           api_node_type: worker
           cores: 12
@@ -358,3 +367,61 @@ all:
           logical_nic_name: eth0
           mask: 255.255.255.0
           memory: 32768
+        wk0:
+          api_node_type: worker
+          cores: 4
+          datastore: r440-1-nvme-local
+          disks:
+            - boot: true
+              controller_number: 0
+              datastore: r440-1-nvme-local
+              size_gb: 100
+              state: present
+              type: thin
+              unit_number: 0
+          dns: 172.16.10.2
+          gateway: 172.16.10.254
+          interface: ens192
+          ip: 172.16.10.135
+          logical_nic_name: eth0
+          mask: 255.255.255.0
+          memory: 16384
+        wk1:
+          api_node_type: worker
+          cores: 4
+          datastore: r440-2-nvme-local
+          disks:
+            - boot: true
+              controller_number: 0
+              datastore: r440-2-nvme-local
+              size_gb: 100
+              state: present
+              type: thin
+              unit_number: 0
+          dns: 172.16.10.2
+          gateway: 172.16.10.254
+          interface: ens192
+          ip: 172.16.10.136
+          logical_nic_name: eth0
+          mask: 255.255.255.0
+          memory: 16384
+        wk2:
+          api_node_type: worker
+          cores: 4
+          datastore: r440-3-nvme-local
+          disks:
+            - boot: true
+              controller_number: 0
+              datastore: r440-3-nvme-local
+              size_gb: 100
+              state: present
+              type: thin
+              unit_number: 0
+          dns: 172.16.10.2
+          gateway: 172.16.10.254
+          interface: ens192
+          ip: 172.16.10.137
+          logical_nic_name: eth0
+          mask: 255.255.255.0
+          memory: 16384
+

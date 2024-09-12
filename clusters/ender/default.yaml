@@ -123,7 +123,7 @@ all:
         ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCwU45tZ14b81PybKtTCk4Qr6ZIA6QgO0XknAVqBEV5kAPy9aHB/L99FbIpX6iku5/QRNe7Id68gJW2vl3YRX9xQ2ogV6BFlduGM+4dqeaQ+LeYoaKrVzze/c2GmgepiYGbpOtMA9tfi3QDla2HdW1cA+SXZwl0LjSNcodu5xHNSWUnH2m71+jepwVYx8Q6uWMLab8m1jpPFrXi96aAMsssgxVo72cZNoKCetj5ckfCfh2Th5FeRgCJV9QjOAkSxSjEoa5gtaniVTH6YsmVSS4zAz3hVTlwY3HM2OxMKeHrHbmodGkx9MxC6ET1iDN7ZwfQCIlksY4x0ex/+Jv4qw5GnE0FVbvrzDlqyVDSwuvFWbQVmPobwmzBFEIxyPzeo1JcAHpLHPePadUvJBzlRUCbxZSIvlV3KOKq9EQ/nEhvhWBwEcnBYXvE+lylcH+54Js0qz4cHVVvlINZtEeC++5PFort5jvGHCMHkf4ofMXWtMJ/Zt43POkNG7k/RFRQ/THKkWriFFW7onceIEOWJzg4sCC8/ziQiKMgojkA9emecWuQJyKRKpkcnfR5hrmq3wBV+AWalj+Cs/4HyuHJWdchtCGb6CgcxAM0AknOevpRr/OomXW0JW95/JIxXUB/+X2VH/rO8+YTeeXCAiBOmreOpDvjBCmjfPfOeyxmivZh5w== ckeller@salab.aws
       user_managed_networking: true
     cleanup_known_hosts: true
-    gitops_baseline_apply: true
+    gitops_baseline_apply: false
     ipxe_initrd_path: http://bastion.ender.lab.uc2.io:8080/initrd
     ipxe_kernel_path: http://bastion.ender.lab.uc2.io:8080/kernel
     ipxe_script_host: bastion.ender.lab.uc2.io
@@ -277,6 +277,81 @@ all:
           gateway: 172.16.80.254
           interface: ens192
           ip: 172.16.80.65
+          logical_nic_name: eth0
+          mask: 255.255.255.0
+          memory: 32768
+        odf0:
+          api_node_type: worker
+          cores: 12
+          datastore: r440-1-nvme-local
+          disks:
+            - boot: true
+              controller_number: 0
+              datastore: r440-1-nvme-local
+              size_gb: 100
+              state: present
+              type: thin
+              unit_number: 0
+            - controller_number: 0
+              datastore: r440-1-nvme-local
+              size_gb: 500
+              state: present
+              type: thin
+              unit_number: 1
+          dns: 172.16.10.2
+          gateway: 172.16.80.254
+          interface: ens192
+          ip: 172.16.80.66
+          logical_nic_name: eth0
+          mask: 255.255.255.0
+          memory: 32768
+        odf1:
+          api_node_type: worker
+          cores: 12
+          datastore: r440-2-nvme-local
+          disks:
+            - boot: true
+              controller_number: 0
+              datastore: r440-2-nvme-local
+              size_gb: 100
+              state: present
+              type: thin
+              unit_number: 0
+            - controller_number: 0
+              datastore: r440-2-nvme-local
+              size_gb: 500
+              state: present
+              type: thin
+              unit_number: 1
+          dns: 172.16.10.2
+          gateway: 172.16.80.254
+          interface: ens192
+          ip: 172.16.80.67
+          logical_nic_name: eth0
+          mask: 255.255.255.0
+          memory: 32768
+        odf2:
+          api_node_type: worker
+          cores: 12
+          datastore: r440-3-nvme-local
+          disks:
+            - boot: true
+              controller_number: 0
+              datastore: r440-3-nvme-local
+              size_gb: 100
+              state: present
+              type: thin
+              unit_number: 0
+            - controller_number: 0
+              datastore: r440-3-nvme-local
+              size_gb: 500
+              state: present
+              type: thin
+              unit_number: 1
+          dns: 172.16.10.2
+          gateway: 172.16.80.254
+          interface: ens192
+          ip: 172.16.80.68
           logical_nic_name: eth0
           mask: 255.255.255.0
           memory: 32768
