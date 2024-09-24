@@ -11,3 +11,6 @@ jobs:
       - uses: actions/checkout@v4
       - name: Run ansible-lint
         uses: ansible/ansible-lint@main
+        with:
+          args: "-v"
+          requirements_file: "collections/requirements.yaml"
