@@ -1,18 +1,65 @@
-- name: Apply Infrastructure Node Labels/Taints
-  kubernetes.core.k8s:
-    definition:
-      apiVersion: v1
-      kind: Node
-      metadata:
-        labels: "{{ infra_labels }}"
-        name: "{{ item }}.{{ assisted_installer.base_domain }}"
-      spec:
-        taints: "{{ infra_taints }}"
-    merge_type: strategic-merge
-    state: patched
-  loop: "{{ groups[provision_group] }}"
-  when:
-    - hostvars[item].node is defined
-    - hostvars[item].node.infra is defined
-    - hostvars[item].node.infra
+- name: Count Number of Infrastructure Nodes in Inventory
+  ansible.builtin.set_fact:
+    infra_node_count: "{{ hostvars | community.general.json_query('*.node.infra') | count }}"
 
+- name: Debug infra_node_count
+  ansible.builtin.debug:
+    var: infra_node_count
+
+- name: Apply Infrastructure Node Configurations
+  when:
+    - (infra_node_count | int) > 0
+  block:
+    - name: Apply Infrastructure Node Labels/Taints
+      kubernetes.core.k8s:
+        definition:
+          apiVersion: v1
+          kind: Node
+          metadata:
+            labels: "{{ infra_labels }}"
+            name: "{{ item }}.{{ assisted_installer.base_domain }}"
+          spec:
+            taints: "{{ infra_taints }}"
+        merge_type: strategic-merge
+        state: patched
+      loop: "{{ groups[provision_group] }}"
+      when:
+        - hostvars[item].node is defined
+        - hostvars[item].node.infra is defined
+        - hostvars[item].node.infra
+
+    - name: Create Infrastructure MachineConfigPool
+      kubernetes.core.k8s:
+        definition:
+          apiVersion: machineconfiguration.openshift.io/v1
+          kind: MachineConfigPool
+          metadata:
+            name: infra
+          spec:
+            machineConfigSelector:
+              matchExpressions:
+                - key: machineconfiguration.openshift.io/role
+                  operator: In
+                  values:
+                    - worker
+                    - infra
+            maxUnavailable: 1
+            nodeSelector:
+              matchLabels:
+                node-role.kubernetes.io/infra: ''
+            paused: false
+
+    - name: Wait for Infrastructure MachineConfigPool to Update
+      kubernetes.core.k8s_info:
+        api_version: machineconfiguration.openshift.io/v1
+        kind: MachineConfigPool
+        name: infra
+      delay: 5
+      register: infra_mcp_results
+      retries: 120
+      until:
+        - infra_mcp_results.resources is defined
+        - infra_mcp_results.resources | count == 1
+        - infra_mcp_results.resources[0].status is defined
+        - infra_mcp_results.resources[0].status.readyMachineCount == (infra_node_count | int)
+        - infra_mcp_results.resources[0].status.updatedMachineCount == (infra_node_count | int)

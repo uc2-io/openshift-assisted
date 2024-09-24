@@ -67,10 +67,6 @@
   become: true
   delegate_to: bastion
 
-# - name: Stop
-#   ansible.builtin.fail:
-#     msg: stopping
-
 - name: IPMI Set Network Boot
   community.general.ipmi_boot:
     bootdev: network
