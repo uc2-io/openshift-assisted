@@ -1,4 +1,8 @@
 ---
+exclude_paths:
+  - .git
+  - .github
+  - collections/ansible_collections
 offline: false
 skip_list:
   - var-naming[no-role-prefix]
