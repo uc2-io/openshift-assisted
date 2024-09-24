@@ -13,4 +13,5 @@ jobs:
         uses: ansible/ansible-lint@main
         with:
           args: "-v"
-          requirements_file: "collections/requirements.yaml"
+          python_dependency_file: requirements.txt
+          requirements_file: collections/requirements.yaml
