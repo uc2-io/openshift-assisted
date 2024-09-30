@@ -34,6 +34,8 @@
           apiVersion: machineconfiguration.openshift.io/v1
           kind: MachineConfigPool
           metadata:
+            labels:
+              pools.operator.machineconfiguration.openshift.io/infra: ''
             name: infra
           spec:
             machineConfigSelector:
