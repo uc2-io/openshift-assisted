@@ -34,6 +34,7 @@
   ansible.builtin.set_fact:
     rhcos_initrd_url: "{{ ipxe_script_results.content | regex_search('initrd --name initrd (.*)$', '\\1', multiline=true) | first }}"
     rhcos_kernel_url: "{{ ipxe_script_results.content | regex_search('kernel (.*) initrd', '\\1', multiline=true) | first }}"
+    rhcos_live_rootfs_url: "{{ ipxe_script_results.content | regex_search('coreos.live.rootfs_url=(.*) random', '\\1', multiline=true) | first }}"
 
 - name: Debug rhcos_initrd_url
   ansible.builtin.debug:
@@ -43,11 +44,17 @@
   ansible.builtin.debug:
     var: rhcos_kernel_url
 
+- name: Debug rhcos_live_rootfs_url
+  ansible.builtin.debug:
+    var: rhcos_live_rootfs_url
+
 - name: Download Kernel to Web Root
   ansible.builtin.get_url:
     dest: "{{ ipxe_web_root }}/kernel"
     mode: "0644"
-    url: "{{ rhcos_kernel_url }}"
+    url: http://bastion.warden.lab.uc2.io:8080/rhcos-417.94.202410090854-0-live-kernel-x86_64
+    # url: https://mirror.openshift.com/pub/openshift-v4/x86_64/dependencies/rhcos/4.17/latest/rhcos-4.17.0-x86_64-live-kernel-x86_64
+    # url: "{{ rhcos_kernel_url }}"
   become: true
   delegate_to: bastion
 
@@ -56,6 +63,15 @@
     dest: "{{ ipxe_web_root }}/initrd"
     mode: "0644"
     url: "{{ rhcos_initrd_url }}"
+  become: true
+  delegate_to: bastion
+
+- name: Download Live rootfs to Web Root
+  ansible.builtin.get_url:
+    dest: "{{ ipxe_web_root }}/rootfs"
+    mode: "0644"
+    url: "{{ rhcos_live_rootfs_url }}"
+    # url: https://mirror.openshift.com/pub/openshift-v4/x86_64/dependencies/rhcos/latest/rhcos-4.17.0-x86_64-live-rootfs.x86_64.img
   become: true
   delegate_to: bastion
 

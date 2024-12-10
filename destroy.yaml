@@ -62,6 +62,81 @@
           }}
         state: absent
 
+    - name: Purge Categories/Tags for vSphere Integrated Clusters
+      when:
+        - assisted_installer is defined
+        - assisted_installer.platform_type is defined
+        - assisted_installer.platform_type == "vsphere"
+      block:
+        - name: Query Tags
+          community.vmware.vmware_tag_info:
+            hostname: "{{ vcenter.hostname }}"
+            password: "{{ vcenter_password }}"
+            username: "{{ vcenter_username }}"
+            validate_certs: "{{ validate_certs }}"
+          register: vmware_tag_info_results
+
+        - name: Debug vmware_tag_info_results
+          ansible.builtin.debug:
+            var: vmware_tag_info_results
+
+        - name: Find Cluster Tags
+          ansible.builtin.set_fact:
+            cluster_tags: "{{ vmware_tag_info_results | community.general.json_query(_query) }}"
+          vars:
+            _query: "tag_info[?starts_with(tag_name, '{{ assisted_installer.cluster_name }}-')].{tag_name: tag_name, tag_category_id: tag_category_id}"
+
+        - name: Debug cluster_tags
+          ansible.builtin.debug:
+            var: cluster_tags
+
+        - name: Delete Cluster Tags
+          community.vmware.vmware_tag:
+            category_id: "{{ item.tag_category_id }}"
+            hostname: "{{ vcenter.hostname }}"
+            password: "{{ vcenter_password }}"
+            state: absent
+            tag_name: "{{ item.tag_name }}"
+            username: "{{ vcenter_username }}"
+            validate_certs: "{{ validate_certs }}"
+          loop: "{{ cluster_tags }}"
+          when:
+            - cluster_tags | length > 0
+
+        - name: Query Catagories
+          community.vmware.vmware_category_info:
+            hostname: "{{ vcenter.hostname }}"
+            password: "{{ vcenter_password }}"
+            username: "{{ vcenter_username }}"
+            validate_certs: "{{ validate_certs }}"
+          register: vmware_category_info_results
+
+        - name: Debug vmware_category_info_results
+          ansible.builtin.debug:
+            var: vmware_category_info_results
+
+        - name: Find Cluster Catagories
+          ansible.builtin.set_fact:
+            cluster_categories: "{{ vmware_category_info_results | community.general.json_query(_query) }}"
+          vars:
+            _query: "tag_category_info[?starts_with(category_name, 'openshift-{{ assisted_installer.cluster_name }}-')].category_name"
+
+        - name: Debug cluster_categories
+          ansible.builtin.debug:
+            var: cluster_categories
+
+        - name: Delete Cluster Catagories
+          community.vmware.vmware_category:
+            category_name: "{{ item }}"
+            hostname: "{{ vcenter.hostname }}"
+            password: "{{ vcenter_password }}"
+            state: absent
+            username: "{{ vcenter_username }}"
+            validate_certs: "{{ validate_certs }}"
+          loop: "{{ cluster_categories }}"
+          when:
+            - cluster_categories | length > 0
+
     - name: Delete Cluster from Red Hat Cloud Console
       ansible.builtin.import_role:
         name: assisted_installer

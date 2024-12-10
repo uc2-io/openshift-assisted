@@ -111,13 +111,14 @@ all:
       cpu_architecture: x86_64
       discovery_iso_datastore: pool-nvme-vms
       discovery_iso_download_path: /tmp
-      discovery_iso_type: minimal-iso
+      # minimal-iso or full-iso
+      discovery_iso_type: full-iso
       disk_encryption:
         enable_on: none
         mode: tpmv2
       high_availability_mode: Full
       network_type: OVNKubernetes
-      openshift_y_release: "4.16"
+      openshift_y_release: "4.17"
       platform_type: none
       ssh_authorized_key: >-
         ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCwU45tZ14b81PybKtTCk4Qr6ZIA6QgO0XknAVqBEV5kAPy9aHB/L99FbIpX6iku5/QRNe7Id68gJW2vl3YRX9xQ2ogV6BFlduGM+4dqeaQ+LeYoaKrVzze/c2GmgepiYGbpOtMA9tfi3QDla2HdW1cA+SXZwl0LjSNcodu5xHNSWUnH2m71+jepwVYx8Q6uWMLab8m1jpPFrXi96aAMsssgxVo72cZNoKCetj5ckfCfh2Th5FeRgCJV9QjOAkSxSjEoa5gtaniVTH6YsmVSS4zAz3hVTlwY3HM2OxMKeHrHbmodGkx9MxC6ET1iDN7ZwfQCIlksY4x0ex/+Jv4qw5GnE0FVbvrzDlqyVDSwuvFWbQVmPobwmzBFEIxyPzeo1JcAHpLHPePadUvJBzlRUCbxZSIvlV3KOKq9EQ/nEhvhWBwEcnBYXvE+lylcH+54Js0qz4cHVVvlINZtEeC++5PFort5jvGHCMHkf4ofMXWtMJ/Zt43POkNG7k/RFRQ/THKkWriFFW7onceIEOWJzg4sCC8/ziQiKMgojkA9emecWuQJyKRKpkcnfR5hrmq3wBV+AWalj+Cs/4HyuHJWdchtCGb6CgcxAM0AknOevpRr/OomXW0JW95/JIxXUB/+X2VH/rO8+YTeeXCAiBOmreOpDvjBCmjfPfOeyxmivZh5w== ckeller@salab.aws
@@ -128,6 +129,7 @@ all:
       - registry
     ipxe_initrd_path: http://bastion.warden.lab.uc2.io:8080/initrd
     ipxe_kernel_path: http://bastion.warden.lab.uc2.io:8080/kernel
+    ipxe_rootfs_path: http://bastion.warden.lab.uc2.io:8080/rootfs
     ipxe_script_host: bastion.warden.lab.uc2.io
     ipxe_script_name: assisted-installer.ipxe
     ipxe_script_port: "8080"
