@@ -1,0 +1,38 @@
+- name: Cleanup OpenShift Categories and Tags
+  gather_facts: false
+  hosts: localhost
+  tasks:
+    - name: Assert Required Parameters
+      ansible.builtin.assert:
+        that:
+          - cluster_name is defined
+
+    - name: Query Catagories
+      community.vmware.vmware_category_info:
+        hostname: "{{ vcenter.hostname }}"
+        password: "{{ vcenter_password }}"
+        username: "{{ vcenter_username }}"
+        validate_certs: false
+      register: vmware_category_results
+
+    - name: Find Catagories
+      ansible.builtin.set_fact:
+        cluster_categories: "{{ vmware_category_results | community.general.json_query(_query) }}"
+      vars:
+        _query: "tag_category_info[?starts_with(category_name, 'openshift-{{ cluster_name }}-')].category_name"
+
+    - name: Debug cluster_categories
+      ansible.builtin.debug:
+        var: cluster_categories
+
+    - name: Delete Cluster Catagories
+      community.vmware.vmware_category:
+        category_name: "{{ item }}"
+        hostname: "{{ vcenter.hostname }}"
+        password: "{{ vcenter_password }}"
+        state: absent
+        username: "{{ vcenter_username }}"
+        validate_certs: false
+      loop: "{{ cluster_categories }}"
+      when:
+        - cluster_categories | length > 0

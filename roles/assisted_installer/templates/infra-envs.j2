@@ -1,14 +1,16 @@
 {% macro static_network_config(interface, ip, dns, gateway) -%}
 interfaces:
   - name: {{ interface }}
-    type: ethernet
-    state: up
     ipv4:
       address:
         - ip: {{ ip }}
           prefix-length: 24
-      enabled: true
       dhcp: false
+      enabled: true
+    ipv6:
+      enabled: false
+    state: up
+    type: ethernet
 dns-resolver:
   config:
     server:
